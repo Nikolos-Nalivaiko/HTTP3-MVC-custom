@@ -1,0 +1,141 @@
+<?php
+
+namespace Core;
+
+use PDO;
+use PDOException;
+
+class Database
+{
+    private static $instance = null;
+
+    protected $db;
+
+    protected string $table;
+
+    protected string $query = '';
+
+    protected array $parameters = [];
+    
+    private function __construct()
+    {
+        try {
+            $this->db = new PDO(
+                'mysql:host=localhost;dbname=http3;charset=utf8',
+                'root',
+                '',
+                [
+                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+                ]
+            );
+        } catch (PDOException $e) {
+            die('Database connection failed: ' . $e->getMessage());
+        }
+    }
+
+    public static function getInstance()
+    {
+        if(self::$instance === null)
+        {
+            self::$instance = new self();
+        }
+
+        return self::$instance;
+    }
+
+    public function table(string $table) :self
+    {
+        $this->table = $table;
+        $this->parameters = [];
+        return $this;
+    }
+
+    public function select(array $columns = ['*']) :self
+    {
+        $this->query = "SELECT " . implode(', ', $columns) . " FROM {$this->table}";
+        return $this;
+    }
+
+    public function orderBy(string $column, string $direction = 'ASC') :self
+    {
+        $this->query .= " ORDER BY $column $direction";
+        return $this;
+    }
+
+    public function get() :array
+    {
+        $stmt = $this->db->prepare($this->query);
+        $stmt->execute($this->parameters);
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    public function insert(array $data) :int
+    {
+        $columns = implode(', ', array_keys($data));
+        $placeholders = rtrim(str_repeat('?, ', count($data)), ', ');
+        $values = array_values($data);
+    
+        $this->query = "INSERT INTO {$this->table} ($columns) VALUES ($placeholders)";
+        $stmt = $this->db->prepare($this->query);
+        $stmt->execute($values);
+    
+        return (int) $this->db->lastInsertId();
+    }    
+
+    public function where(string $column, string $operator, $value) :self
+    {
+        if (strpos($this->query, 'WHERE') === false)
+        {
+            $this->query .= " WHERE $column $operator ?";
+        } else 
+        {
+            $this->query .= " AND $column $operator ?";
+        }
+        $this->parameters[] = $value;
+        return $this;
+    }
+
+    public function update(array $data): void
+    {
+        $set = [];
+        $setParameters = [];
+        foreach ($data as $column => $value) {
+            $set[] = "$column = ?";
+            $setParameters[] = $value;
+        }
+        $setClause = implode(', ', $set);
+
+        $whereClause = '';
+        if (strpos($this->query, 'WHERE') !== false) {
+            $whereClause = substr($this->query, strpos($this->query, 'WHERE'));
+        }
+
+        $this->query = "UPDATE {$this->table} SET $setClause $whereClause";
+
+        $stmt = $this->db->prepare($this->query);
+        $stmt->execute(array_merge($setParameters, $this->parameters));
+
+        $this->parameters = [];
+        $this->query = '';
+    }
+
+    public function first() : ?array
+    {
+        $this->query .= " LIMIT 1";
+        $stmt = $this->db->prepare($this->query);
+        $stmt->execute($this->parameters);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result ? $result : null;
+    }
+
+    public function pluck(string $column) : ?int
+    {
+        $this->query = "SELECT $column FROM {$this->table} " . (strpos($this->query, 'WHERE') ? substr($this->query, strpos($this->query, 'WHERE')) : '');
+        $stmt = $this->db->prepare($this->query);
+        $stmt->execute($this->parameters);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result ? (int)$result[$column] : null;
+    }
+
+}
