@@ -55,13 +55,13 @@ class AccountController
                 return $response->setJsonContent($this->validator->getErrors()); 
             }
 
-            if(!$this->auth->checkCredentials($this->userModel, $data['password'], $data['login']))
+            if(!$this->auth->checkCredentials($data['password'], $data['login']))
             {
                 $response->setStatusCode(422);
                 return $response->setJsonContent('Sorry, bad credentials');
             }
 
-            $userId = $this->userModel->create($data);
+            $userId = $this->auth->register($data);
 
             if (!$userId) {
                 $response->setStatusCode(500);
@@ -86,6 +86,7 @@ class AccountController
                 if(move_uploaded_file($image['tmp_name'], $photoPath))
                 {
                     $this->userModel->addImage($userId, time() . '_' . $image['name']);
+                    return $response->setJsonContent(true);
                 } else {
                     $response->setStatusCode(400);
                     return $response->setJsonContent('Image not uploaded');

@@ -233,7 +233,9 @@ $('.sign-up__form').on('submit', function(e) {
                             console.log(xhr.responseText);
                         }
                     });
-                }
+                } 
+
+                $('.overlay--success').fadeIn();
             }
         },
         error: function(xhr, status, error) {

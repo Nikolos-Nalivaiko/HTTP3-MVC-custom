@@ -16,4 +16,6 @@ require_once __DIR__ . '/routes/web.php';
 
 $kernel = new Kernel($router, $request, $response);
 
+// $kernel->addMiddleware(Core\Middlewares\AuthMiddleware::class);
+
 $kernel->handle();

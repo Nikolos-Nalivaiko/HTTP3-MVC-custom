@@ -26,11 +26,10 @@ class User extends Model
 
     public function create($data)
     {
-        $password = password_hash($data['password'], PASSWORD_DEFAULT);
         $query = $this->db
         ->table('users')
         ->insert([
-            'password' => $password,
+            'password' => $data['password'],
             'login' => $data['login'],
             'user_name' => $data['user_name'],
             'middle_name' => $data['middle_name'],
