@@ -264,3 +264,307 @@ function visiblePass() {
         });
     }); 
 }
+
+// Files Viewer \\
+
+function fileView(formSelector)
+{
+    var fileInput = $(formSelector).find('input[type="file"]');
+    
+    fileInput.change(function(e) {
+        var files = Array.from(e.target.files);
+        $('.input__images').empty();
+        loadFiles(files, fileInput);
+    });
+}
+
+function loadFiles(files, fileInput) {
+    function loadFile(index) {
+        if (index >= files.length) return;
+
+        var file = files[index];
+        var reader = new FileReader();
+
+        reader.onload = function(e) {
+            var imgWrapper = createImage(e.target.result, file.name);
+            $('.input__images').append(imgWrapper);
+
+            imgWrapper.find('.__icon-close').click(function() {
+                imgWrapper.css('display', 'none');
+                files = files.filter(f => f.name !== file.name);
+                updateFileInput(files, fileInput);
+            });
+
+            loadFile(index + 1);
+        };
+
+        reader.readAsDataURL(file);
+    }
+
+    loadFile(0);
+}
+
+function createImage(imageSrc, fileName) {
+    return $(`
+        <div class="input__image-wrapper">
+            <p class="input__image-icon __icon-close"></p>
+            <img src="${imageSrc}" class="input__image" data-file-name="${fileName}">
+        </div>
+    `);
+}
+
+function updateFileInput(files, fileInput)
+{
+    var dataTransfer = new DataTransfer();
+    files.forEach(function(file) {
+        dataTransfer.items.add(file);
+    });
+    fileInput[0].files = dataTransfer.files;
+}
+
+// Regions work \\
+
+function RegionChange(regionSelector, citySelector, url)
+{
+    $(regionSelector).on('change', function() {
+        var selectedOption = $(this).find(":selected");
+        var selectedValue = selectedOption.val();
+
+        const data = {
+            region: selectedValue
+        };
+
+        fetchCities(data, citySelector, url);
+    });
+}
+
+function fetchCities(data, citySelector, url) {
+    $.ajax({
+        url: url,
+        type: 'POST',
+        contentType: 'application/json',
+        dataType: 'json',
+        data: JSON.stringify(data),
+        success: function(response) {
+            updateCityOptions(response, citySelector);
+        },
+        error: function(xhr, status, error) {
+            handleAjaxError(xhr);
+        }
+    });
+}
+
+function updateCityOptions(cities, citySelector) {
+    var $citySelect = $(citySelector);
+    $citySelect.empty();
+    $citySelect.append('<option disabled selected hidden class="input__option" value=""> </option>');
+
+    $.each(cities, function(index, city) {
+        $citySelect.append('<option class="input__option" value="' + city + '">' + city + '</option>');
+    });
+}
+
+function handleAjaxError(xhr) {
+    console.log(xhr.responseText);
+}
+
+// Validation 
+
+function validateField(fieldName, fieldValue, rules) {
+    var fieldRules = rules[fieldName];
+
+    if (fieldRules != null) {
+        for (var rule in fieldRules) {
+            switch (rule) {
+                case 'min_length':
+                    var minLength = fieldRules[rule];
+                    if (fieldValue.length < minLength)
+                    {
+                        return false;
+                    }
+                    break;
+                case 'max_length':
+                    var maxLength = fieldRules[rule];
+                    if (fieldValue.length > maxLength)
+                    {
+                        return false;
+                    }
+                    break;    
+                case 'required':
+                    if (fieldValue.trim() === '')
+                    {
+                        return false;
+                    }
+                    break;
+                case 'same':
+                    var sameField = fieldRules[rule];
+                    if (fieldValue !== $('#' + sameField).val()) 
+                    {
+                        return false;
+                    }
+                    break;
+                case 'strongRegex':
+                    var specialChars = /[ !@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/;
+                    if (specialChars.test(fieldValue)) {
+                        return false;
+                    }
+                    break; 
+                case 'lightRegex':
+                    var specialChars = /[ !@#$%^&*()_+\-=\[\]{};':\\|,<.>\/]/;
+                    if (specialChars.test(fieldValue)) {
+                        return false;
+                    }
+                    break;
+                    
+                    case 'email':
+                        var emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                        if (!emailPattern.test(fieldValue)) {
+                            return false;
+                        }
+                        break;                    
+            }
+        }
+    }
+    return true; 
+}
+
+function transformField(fieldName, status) {
+    var $field = $('#' + fieldName);
+    var $wrapper = $field.closest('.input__wrapper');
+    var color = status ? '#5BB318' : 'red';
+    var focusOutColor = status ? '#5F5F5F' : 'red';
+    var focusOutLabelColor = status ? '#C8C8C8' : 'red';
+    
+    $field.css('border-color', status ? '' : color);
+    $wrapper.find('.input__icon').css('color', color);
+    $wrapper.find('.input__label').css('color', color);
+    
+    $field.off('focusin focusout').on('focusin', function() {
+        $field.css('border-color', status ? '' : color);
+        $wrapper.find('.input__icon').css('color', color);
+        $wrapper.find('.input__label').css('color', color);
+    }).on('focusout', function() {
+        $field.css('border-color', status ? '' : color);
+        $wrapper.find('.input__icon').css('color', focusOutColor);
+        $wrapper.find('.input__label').css('color', focusOutLabelColor);
+    });
+}
+
+function validateInputsForm(formSelector, rules) {
+    $(formSelector).find('input').on('input', function() {
+        var fieldName = $(this).attr('id');
+        let isValid = validateField(fieldName, $(this).val(), rules);
+        transformField(fieldName, isValid);
+    });
+}
+
+function validateForm(form, rules) {
+    var formIsValid = true;
+
+    $(form).find('input').each(function() {
+        var fieldName = $(this).attr('id');
+        var fieldValue = $(this).val();
+        
+        if (!validateField(fieldName, fieldValue, rules)) {
+            formIsValid = false;
+        } 
+    });
+
+    if (formIsValid) {
+        return true; 
+    } else {
+        return false; 
+    }
+}
+
+// ------------------------------------------- \\
+
+function userSignUpValidateForm(formSelector, url)
+{
+    var rules = {
+        'password': {'min_length': 2, 'required': true, 'max_length': 10, 'strongRegex': true},
+        // 'confirm': { 'min_length': 2, 'required': true, 'max_length': 10, 'strongRegex': true, 'same':'password'},
+        // 'login': { 'min_length': 2, 'required': true, 'max_length': 10, 'strongRegex': true},
+        // 'user_name': { 'min_length': 2, 'required': true, 'lightRegex': true},
+        // 'middle_name': { 'min_length': 2, 'required': true, 'lightRegex': true},
+        // 'last_name': { 'min_length': 2, 'required': true, 'lightRegex': true},
+        // 'email': { 'email': true, 'required': true},
+    };
+
+    validateInputsForm(formSelector, rules);
+    $(formSelector).submit(function(event) {
+        if(validateForm(this, rules)) {
+            var $form = $(formSelector);
+            var FormData = getFormData($form);
+            var jsonData = JSON.stringify(FormData);
+            sendFormData(jsonData, formSelector, url);
+        }
+    })  
+}
+
+// Send form \\
+
+function getFormData($form) {
+    var formData = {};
+    $form.serializeArray().forEach(function(item) {
+        formData[item.name] = item.value;
+    });
+    return formData;
+}
+
+function sendFormData(jsonData, formSelector, url) {
+    $.ajax({
+        url: url,
+        type: 'POST',
+        contentType: 'application/json',
+        dataType: 'json',
+        data: jsonData,
+        success: function(response) {
+            handleSignUpSuccess(response, formSelector);
+        },
+        error: function(xhr, status, error) {
+            handleAjaxError(xhr);
+        }
+    });
+}
+
+function handleSignUpSuccess(response, formSelector) {
+    if (response.userId) {
+        var userId = response.userId;
+        var formData = collectFilesData(userId, formSelector);
+        
+        if (!formData.entries().next().done) {
+            sendFilesData(formData);
+        } 
+        
+        $('.overlay--success').fadeIn();
+    } else {
+        $('.overlay--error').fadeIn();
+    }
+}
+
+function collectFilesData(userId, formSelector) {
+    var formData = new FormData();
+    $(formSelector).find('input[type="file"]').each(function() {
+        var files = this.files;
+        for (var i = 0; i < files.length; i++) {
+            formData.append(this.name, files[i]);
+        }
+    });
+    formData.append('userId', userId);
+    return formData;
+}
+
+function sendFilesData(formData) {
+    $.ajax({
+        url: '/sign-up/user',
+        type: 'POST',
+        processData: false,
+        contentType: false,
+        data: formData,
+        success: function() {},
+        error: function(xhr, status, error) {
+            handleAjaxError(xhr);
+        }
+    });
+}

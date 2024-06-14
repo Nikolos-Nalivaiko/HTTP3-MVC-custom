@@ -48,6 +48,7 @@ class Database
     {
         $this->table = $table;
         $this->parameters = [];
+        $this->query = '';
         return $this;
     }
 
@@ -83,7 +84,29 @@ class Database
         return (int) $this->db->lastInsertId();
     }    
 
-    public function where(string $column, string $operator, $value) :self
+    public function first() : ?array
+    {
+        $this->query .= " LIMIT 1";
+        $stmt = $this->db->prepare($this->query);
+        $stmt->execute($this->parameters);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result ? $result : null;
+    }
+
+    public function pluck(string $column) : ?int
+    {
+        $this->query = "SELECT $column FROM {$this->table} " . (strpos($this->query, 'WHERE') ? substr($this->query, strpos($this->query, 'WHERE')) : '');
+        $stmt = $this->db->prepare($this->query);
+        $stmt->execute($this->parameters);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        $this->parameters = [];
+        $this->query = '';
+
+        return $result ? (int)$result[$column] : null;
+    }
+
+    public function where(string $column, string $operator, $value) 
     {
         if (strpos($this->query, 'WHERE') === false)
         {
@@ -105,37 +128,23 @@ class Database
             $setParameters[] = $value;
         }
         $setClause = implode(', ', $set);
-
+    
         $whereClause = '';
         if (strpos($this->query, 'WHERE') !== false) {
             $whereClause = substr($this->query, strpos($this->query, 'WHERE'));
         }
-
+    
         $this->query = "UPDATE {$this->table} SET $setClause $whereClause";
-
+    
+        // echo "SQL Query: " . $this->query . "\n";
+        // echo "Parameters: " . json_encode(array_merge($setParameters, $this->parameters)) . "\n";
+        // exit();
+    
         $stmt = $this->db->prepare($this->query);
         $stmt->execute(array_merge($setParameters, $this->parameters));
-
+    
         $this->parameters = [];
         $this->query = '';
-    }
-
-    public function first() : ?array
-    {
-        $this->query .= " LIMIT 1";
-        $stmt = $this->db->prepare($this->query);
-        $stmt->execute($this->parameters);
-        $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $result ? $result : null;
-    }
-
-    public function pluck(string $column) : ?int
-    {
-        $this->query = "SELECT $column FROM {$this->table} " . (strpos($this->query, 'WHERE') ? substr($this->query, strpos($this->query, 'WHERE')) : '');
-        $stmt = $this->db->prepare($this->query);
-        $stmt->execute($this->parameters);
-        $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $result ? (int)$result[$column] : null;
-    }
+    }     
 
 }

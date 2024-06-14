@@ -32,6 +32,7 @@ class Authenticator
     {
         $data['password'] = password_hash($data['password'], PASSWORD_BCRYPT);
         $userId = $this->userModel->create($data);
+        $this->session->set('user_id', $userId);
         return $userId;
     }
 
@@ -51,10 +52,17 @@ class Authenticator
         
         if($user && password_verify($password, $user['password']))
         {
+            $this->session->set('user_id', $user['id_user']);
             return true;
         }
 
         return false;
+    }
+
+    public function user()
+    {
+        $user = $this->userModel->getById($this->id());
+        return $user;
     }
 
     public function id()

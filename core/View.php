@@ -14,4 +14,11 @@ class View
 
         require __DIR__ . '/../app/Views/layouts/main.php';
     }
+
+    public static function errorCode($code) {
+        http_response_code($code);
+
+        require 'app/Views/errors/'.$code.'.php';
+        exit;
+    }
 }

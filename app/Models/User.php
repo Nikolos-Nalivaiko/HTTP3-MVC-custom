@@ -50,8 +50,19 @@ class User extends Model
     public function addImage($userId, $imageName)
     {
         $query = $this->db->table('users')
-        ->where('id_user', '=', $userId)
+        ->where('id_user','=', $userId)
         ->update(['image' => $imageName]);
+        return $query;
+    }
+
+    public function getById($id)
+    {
+        $query = $this->db
+        ->table('users')
+        ->select()
+        ->where('id_user','=', $id)
+        ->first();
+
         return $query;
     }
 }

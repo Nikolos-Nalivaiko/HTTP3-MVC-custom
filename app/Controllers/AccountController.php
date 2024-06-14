@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\Geo;
 use App\Services\Validator;
 use App\Services\Authenticator;
+use App\Services\Session;
 
 class AccountController
 {
@@ -16,13 +17,15 @@ class AccountController
     protected $geoModel;
     protected $validator;
     protected $auth;
+    protected $session;
 
-    public function __construct(User $user, Geo $geo, Validator $validator, Authenticator $authenticator)
+    public function __construct(User $user, Geo $geo, Validator $validator, Authenticator $authenticator, Session $session)
     {
         $this->userModel = $user;
         $this->geoModel = $geo;
         $this->validator = $validator;
         $this->auth = $authenticator;
+        $this->session = $session;
     }
 
     public function select()
@@ -33,6 +36,8 @@ class AccountController
     public function signUpUser(Request $request, Response $response)
     {
 
+        // $this->session->set('user_id', 14);
+        // $this->session->destroy();
         $userId = null;
 
         $rules = [
@@ -49,9 +54,10 @@ class AccountController
         {
             $data = $request->all();
 
+            // $this->userModel->addImage(14, 'image|bvc');
+
             if(!$this->validator->validate($data, $rules))
             {
-                $response->setStatusCode(422);
                 return $response->setJsonContent($this->validator->getErrors()); 
             }
 
@@ -82,11 +88,11 @@ class AccountController
 
             foreach($request->files('images') as $image)
             {
-                $photoPath = 'public/carsImages/' . time() . '_' . $image['name'];
+                $photoPath = 'public/usersImages/' . time() . '_' . $image['name'];
                 if(move_uploaded_file($image['tmp_name'], $photoPath))
                 {
-                    $this->userModel->addImage($userId, time() . '_' . $image['name']);
-                    return $response->setJsonContent(true);
+                    $this->userModel->addImage($userId, $image['name']);
+                    // return $response->setJsonContent(true);
                 } else {
                     $response->setStatusCode(400);
                     return $response->setJsonContent('Image not uploaded');
@@ -101,7 +107,17 @@ class AccountController
 
         View::render('account/signUpUser', [
             'title' => 'HTTP - User sign-up',
-            'regions' => $this->geoModel->getRegions() 
+            'regions' => $this->geoModel->getRegions(),
+            'user' => $request->getBodyParam('user') 
+        ]);
+    }
+
+    public function signIn(Request $request, Response $response)
+    {
+
+        View::render('account/signIn', [
+            'title' => 'HTTP - User sign-in',
+            'user' => $request->getBodyParam('user') 
         ]);
     }
 

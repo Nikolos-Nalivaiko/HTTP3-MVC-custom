@@ -51,7 +51,7 @@
         <div class="overlay__body">
             <p class="overlay__icon overlay__icon-error __icon-close"></p>
             <p class="overlay__headline">Виникла помилка</p>
-            <p class="overlay__description">Логін - поле має невірний формат, будь ласка, перевірте введені дані</p>
+            <p class="overlay__description">Будь ласка, перевірте введені дані</p>
             <p class="overlay__btn overlay__close">Закрити</p>
         </div>
     </div>
@@ -123,10 +123,9 @@
                             </div>
                         </li>
                         <?php
-                        if (empty($user)) {
-                            echo '<li class="navbar__item"><a class="navbar__item-btn" href="/sign-up/select">Увійти</a></li>';
-                        } else {
-                            ?>
+                        if($user)
+                        {
+                        ?>
                         <a href="/account/profile" class="navbar__user">
                             <img class="navbar__user-image" src="/public/user_image/<?= $user['image']?>"
                                 alt="user_image">
@@ -137,6 +136,9 @@
                             </div>
                         </a>
                         <?php
+                        } else
+                        {
+                            echo '<li class="navbar__item"><a class="navbar__item-btn" href="/sign-in">Увійти</a></li>';
                         }
                         ?>
                     </ul>
@@ -180,6 +182,10 @@
     <script type="text/javascript" src="/public/js/jquery.mask.min.js"></script>
     <script>
     phoneMask();
+    // formSubmit('.sign-up__form', '/sign-up/user');
+    userSignUpValidateForm('.sign-up__form', '/sign-up/user');
+    fileView('.sign-up__form');
+    RegionChange('#region', '#city', '/sign-up/user');
     </script>
 </body>
 

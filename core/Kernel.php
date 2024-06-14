@@ -19,22 +19,18 @@ class Kernel
     public function handle()
     {
         // Обробка middleware перед основною логікою
-        foreach ($this->middlewares as $middleware) {
-            $instance = new $middleware();
-            $instance->handle($this->request, function() {});
-        }
+        $response = $this->handleMiddleware($this->middlewares, $this->request, $this->response, function($request, $response) {
+            // Обробка маршруту та формування відповіді
+            return $this->router->direct($request, $response);
+        });
 
-        // Обробка маршруту та формування відповіді
-        $this->router->direct($this->request, $this->response);
-
-        // Обробка middleware після основної логіки
-        foreach ($this->middlewares as $middleware) {
-            $instance = new $middleware();
-            $instance->terminate($this->request, $this->response);
+        // Переконайтесь, що response не null
+        if (is_null($response)) {
+            $response = $this->response;
         }
 
         // Відправка відповіді клієнту
-        $this->sendResponse();
+        $this->sendResponse($response);
     }
 
     // Додавання middleware
@@ -44,16 +40,30 @@ class Kernel
     }
 
     // Відправка відповіді клієнту
-    protected function sendResponse()
+    protected function sendResponse($response)
     {
-        http_response_code($this->response->getStatusCode());
+        http_response_code($response->getStatusCode());
 
-        foreach ($this->response->getHeaders() as $name => $value) {
+        foreach ($response->getHeaders() as $name => $value) {
             header("{$name}: {$value}");
         }
 
-        echo $this->response->getContent();
+        echo $response->getContent();
         exit;
     }
-}
 
+    // Обробка middleware
+    protected function handleMiddleware($middlewares, $request, $response, $next)
+    {
+        // Перебір middleware з кінця до початку, щоб забезпечити правильний порядок виконання
+        foreach (array_reverse($middlewares) as $middleware) {
+            $next = function($request, $response) use ($middleware, $next) {
+                $instance = new $middleware();
+                return $instance->handle($request, $response, $next);
+            };
+        }
+
+        // Виклик зворотнього виклику для початку виконання ланцюжка middleware
+        return $next($request, $response);
+    }
+}

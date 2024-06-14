@@ -34,6 +34,11 @@ class Request
     {
         return $this->method;
     }
+    
+    public function set($key, $value)
+    {
+        $this->bodyParams[$key] = $value;
+    }
 
     public function getQueryParam($key, $default = null)
     {
