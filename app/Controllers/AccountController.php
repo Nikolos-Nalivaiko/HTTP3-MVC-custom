@@ -28,15 +28,17 @@ class AccountController
         $this->session = $session;
     }
 
-    public function select()
+    public function select(Request $request)
     {
-        View::render('account/select', ['title' => 'HTTP - Profile select']);
+        View::render('account/select', [
+            'title' => 'HTTP - Profile select',
+            'user' => $request->getBodyParam('user')
+        ]);
     }
 
     public function signUpUser(Request $request, Response $response)
     {
 
-        // $this->session->set('user_id', 14);
         // $this->session->destroy();
         $userId = null;
 
@@ -53,8 +55,6 @@ class AccountController
         if($request->getBodyParam('password'))
         {
             $data = $request->all();
-
-            // $this->userModel->addImage(14, 'image|bvc');
 
             if(!$this->validator->validate($data, $rules))
             {
@@ -88,11 +88,10 @@ class AccountController
 
             foreach($request->files('images') as $image)
             {
-                $photoPath = 'public/usersImages/' . time() . '_' . $image['name'];
+                $photoPath = 'public/usersImages/' . $image['name'];
                 if(move_uploaded_file($image['tmp_name'], $photoPath))
                 {
                     $this->userModel->addImage($userId, $image['name']);
-                    // return $response->setJsonContent(true);
                 } else {
                     $response->setStatusCode(400);
                     return $response->setJsonContent('Image not uploaded');
@@ -114,10 +113,38 @@ class AccountController
 
     public function signIn(Request $request, Response $response)
     {
+        // $this->session->destroy();
+        $rules = [
+            'password' => ['required', 'min:2', 'max:30', 'no_special_chars'],
+            'login' => ['required', 'min:2', 'max:30', 'no_special_chars'],
+
+        ];
+
+        if($request->getBodyParam('password'))
+        {
+            $data = $request->all();
+
+            if(!$this->validator->validate($data, $rules))
+            {
+                return $response->setJsonContent($this->validator->getErrors());
+            }
+
+            if(!$this->auth->login($data['login'], $data['password']))
+            {
+                return $response->setJsonContent('Not auth');
+            }
+
+            if($request->getBodyParam('checkbox'))
+            {
+                $this->auth->remember($data['login']);
+            }
+
+            return $response->setJsonContent(true);
+        }
 
         View::render('account/signIn', [
             'title' => 'HTTP - User sign-in',
-            'user' => $request->getBodyParam('user') 
+            'user' => $request->getBodyParam('user')
         ]);
     }
 

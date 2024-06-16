@@ -1,6 +1,13 @@
-function overlay() {
+function overlayClose() {
     $('.overlay__close').on('click', function (event) {
         $('.overlay').fadeOut()
+    })
+}
+
+function overlayRedirect(url)
+{
+    $('.overlay__close').on('click', function (event) {
+        window.location.href = url;
     })
 }
 
@@ -483,12 +490,12 @@ function userSignUpValidateForm(formSelector, url)
 {
     var rules = {
         'password': {'min_length': 2, 'required': true, 'max_length': 10, 'strongRegex': true},
-        // 'confirm': { 'min_length': 2, 'required': true, 'max_length': 10, 'strongRegex': true, 'same':'password'},
-        // 'login': { 'min_length': 2, 'required': true, 'max_length': 10, 'strongRegex': true},
-        // 'user_name': { 'min_length': 2, 'required': true, 'lightRegex': true},
-        // 'middle_name': { 'min_length': 2, 'required': true, 'lightRegex': true},
-        // 'last_name': { 'min_length': 2, 'required': true, 'lightRegex': true},
-        // 'email': { 'email': true, 'required': true},
+        'confirm': { 'min_length': 2, 'required': true, 'max_length': 10, 'strongRegex': true, 'same':'password'},
+        'login': { 'min_length': 2, 'required': true, 'max_length': 10, 'strongRegex': true},
+        'user_name': { 'min_length': 2, 'required': true, 'lightRegex': true},
+        'middle_name': { 'min_length': 2, 'required': true, 'lightRegex': true},
+        'last_name': { 'min_length': 2, 'required': true, 'lightRegex': true},
+        'email': { 'email': true, 'required': true},
     };
 
     validateInputsForm(formSelector, rules);
@@ -500,6 +507,24 @@ function userSignUpValidateForm(formSelector, url)
             sendFormData(jsonData, formSelector, url);
         }
     })  
+}
+
+function logInValidate(formSelector, url)
+{
+    var rules = {
+        'password': {'min_length': 2, 'required': true, 'max_length': 10, 'strongRegex': true},
+        'login': { 'min_length': 2, 'required': true, 'max_length': 10, 'strongRegex': true},
+    };
+
+    validateInputsForm(formSelector, rules);
+    $(formSelector).submit(function(event) {
+        if(validateForm(this, rules)) {
+            var $form = $(formSelector);
+            var FormData = getFormData($form);
+            var jsonData = JSON.stringify(FormData);
+            sendFormSignIn(jsonData, url);
+        }
+    })
 }
 
 // Send form \\
@@ -528,6 +553,31 @@ function sendFormData(jsonData, formSelector, url) {
     });
 }
 
+function sendFormSignIn(jsonData, url) {
+    $.ajax({
+        url: url,
+        type: 'POST',
+        contentType: 'application/json',
+        dataType: 'json',
+        data: jsonData,
+        success: function(response) {
+            console.log(response);
+            if(response == true)
+            {
+                $('.overlay--success').fadeIn();
+                overlayRedirect('/');
+            } else 
+            {
+                $('.overlay--error').fadeIn();
+                overlayClose();
+            }
+        },
+        error: function(xhr, status, error) {
+            handleAjaxError(xhr);
+        }
+    });
+}
+
 function handleSignUpSuccess(response, formSelector) {
     if (response.userId) {
         var userId = response.userId;
@@ -538,8 +588,10 @@ function handleSignUpSuccess(response, formSelector) {
         } 
         
         $('.overlay--success').fadeIn();
+        overlayRedirect('/');
     } else {
         $('.overlay--error').fadeIn();
+        overlayRedirect('/');
     }
 }
 

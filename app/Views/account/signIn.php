@@ -6,7 +6,7 @@
                 можливості не мають меж, а
                 співпраця – легка та захоплива</p>
 
-            <form action="" onsubmit="event.preventDefault()" name="signIn" method="post" class="sign-in__form"
+            <form action="" name="signIn" onsubmit="event.preventDefault()" method="post" class="sign-in__form"
                 enctype="multipart/form-data">
 
                 <div class="input__wrapper input__wrapper-sign-in">
@@ -14,7 +14,7 @@
                     <p class="input__icon-visible __icon-visible_pass"></p>
                     <div class="input__content">
                         <label for="pass" class="input__label">Введіть ваш пароль</label>
-                        <input type="password" name="password" id="pass" class="input input__sign-in input--password">
+                        <input type="password" name="password" id="password" class="input input__sign-in input--password">
                     </div>
                 </div>
 

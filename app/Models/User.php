@@ -17,8 +17,20 @@ class User extends Model
     {
         $query = $this->db
         ->table('users')
-        ->select(['password', 'login'])
+        ->select(['id_user','password', 'login'])
         ->where('login', '=', $login)
+        ->first();
+
+        return $query;
+    }
+
+    public function getByCookie($cookie, $login)
+    {
+        $query = $this->db
+        ->table('users')
+        ->select()
+        ->where('login', '=', $login)
+        ->where('cookie', '=', $cookie)
         ->first();
 
         return $query;
@@ -64,5 +76,13 @@ class User extends Model
         ->first();
 
         return $query;
+    }
+
+    public function setCookie($key, $login)
+    {
+        $this->db
+        ->table('users')
+        ->where('login', '=', $login)
+        ->update(['cookie' => $key]);
     }
 }

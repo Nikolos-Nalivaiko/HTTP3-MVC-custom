@@ -127,7 +127,7 @@
                         {
                         ?>
                         <a href="/account/profile" class="navbar__user">
-                            <img class="navbar__user-image" src="/public/user_image/<?= $user['image']?>"
+                            <img class="navbar__user-image" src="/public/usersImages/<?= $user['image']?>"
                                 alt="user_image">
                             <div class="navbar__user-text">
                                 <p class="navbar__user-subtitle"><?= $user['type'] ?></p>
@@ -182,10 +182,11 @@
     <script type="text/javascript" src="/public/js/jquery.mask.min.js"></script>
     <script>
     phoneMask();
-    // formSubmit('.sign-up__form', '/sign-up/user');
     userSignUpValidateForm('.sign-up__form', '/sign-up/user');
+    logInValidate('.sign-in__form', '/sign-in');
     fileView('.sign-up__form');
     RegionChange('#region', '#city', '/sign-up/user');
+    visiblePass();
     </script>
 </body>
 
