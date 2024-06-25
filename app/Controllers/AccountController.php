@@ -1,5 +1,7 @@
 <?php
 
+// Почитай про declare(strict_types=1) і додавай всюди :)
+
 namespace App\Controllers;
 
 use Core\View;
@@ -13,6 +15,8 @@ use App\Services\Session;
 
 class AccountController
 {
+    // Не забувай вказувати типи своїх проперті. protected Model $userModel, або protected User $userModel
+    // А чому ти використовуєш protected? В тебе від AccountController ніхто не спадкується, тобі достатньо private
     protected $userModel;
     protected $geoModel;
     protected $validator;
@@ -28,19 +32,30 @@ class AccountController
         $this->session = $session;
     }
 
-    public function select(Request $request)
+    public function select(Request $request) // Не забувай вказувати тип який повертає метод. : string, : int, : Response, : View https://phpgrid.com/blog/time-to-use-php-return-types-in-your-code/
     {
+        // Метод не повинен рендерити і помирати.
+        // Він повинен повернути клас типу View, а самим відтворенням в тебе займеться Kernel, чи хто там.
+        // Тому що ти хрєнак, вирішив десь встановити Listener, що якщо повертається вью - переписати це на другий формат.
+        // І тепер не вьюшка летить, а JSON (буває)
+
+        // В цілому, насправді, виглядає як дядьківський код, але тре доробити
         View::render('account/select', [
             'title' => 'HTTP - Profile select',
             'user' => $request->getBodyParam('user')
         ]);
     }
 
+    // Як я помітив, в тебе один метод займається мінімум трьома задачами:
+    // 1. Відображення сторінки реєстрації
+    // 2. Сама реєстрація
+    // 3. Завантаження картиночок
+    // Це трошечки дохєра :) Варто або винести їх по окремим методам, або винести ці задачі в сервіси, хендлери, екшени і звідси тільки викликати ці сервіси
     public function signUpUser(Request $request, Response $response)
     {
 
         // $this->session->destroy();
-        $userId = null;
+        $userId = null; // Зайва змінна. Вона всюди перевизначається. Нема поінту де б вона використалась необ'явленою
 
         $rules = [
             'password' => ['required', 'min:2', 'max:30', 'no_special_chars'],
@@ -52,13 +67,14 @@ class AccountController
             'email' => ['email'],
         ];
 
+        // Якщо ти хочеш зробити єдиний метод для відображення і самої, власне, логіки регістрації - варто визначати це по методу (GET, POST), а не по полям
         if($request->getBodyParam('password'))
         {
             $data = $request->all();
 
             if(!$this->validator->validate($data, $rules))
             {
-                return $response->setJsonContent($this->validator->getErrors()); 
+                return $response->setJsonContent($this->validator->getErrors());
             }
 
             if(!$this->auth->checkCredentials($data['password'], $data['login']))
@@ -74,6 +90,7 @@ class AccountController
                 return $response->setJsonContent('Failed to create user');
             }
 
+            // Якщо в реквесті були зображення - вони не будуть збережені.
             return $response->setJsonContent(['userId' => $userId]);
         }
 
@@ -107,7 +124,7 @@ class AccountController
         View::render('account/signUpUser', [
             'title' => 'HTTP - User sign-up',
             'regions' => $this->geoModel->getRegions(),
-            'user' => $request->getBodyParam('user') 
+            'user' => $request->getBodyParam('user')
         ]);
     }
 

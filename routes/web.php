@@ -3,6 +3,7 @@
 use App\Middlewares\AuthMiddleware;
 use App\Middlewares\GuestMiddleware;
 
+// Undefined variable '$router'
 $router->get('', 'HomeController@index');
 
 $router->get('sign-up/select', 'AccountController@select', [GuestMiddleware::class]);

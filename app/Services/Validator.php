@@ -6,12 +6,10 @@ class Validator
 {
     protected $errors = [];
 
-    public function validate(array $data, array $rules)
+    public function validate(array $data, array $rules): bool
     {
-        foreach($rules as $field => $rulesArray)
-        {
-            foreach($rulesArray as $rule)
-            {
+        foreach ($rules as $field => $rulesArray) {
+            foreach ($rulesArray as $rule) {
                 $this->applyRule($field, $data, $rule);
             }
         }
@@ -19,12 +17,13 @@ class Validator
         return empty($this->errors);
     }
 
-    protected function applyRule($field, $data, $rule)
+    // Повідомлення краще винести в окремий метод, типу getMessages, або resolveMessages, бо в тебе метод займається занадто багатьма задачами
+    // Правила можна винести в масив і пробігати циклом, щоб не було занадто великого методу
+    protected function applyRule($field, $data, $rule): void
     {
         $value = isset($data[$field]) ? $data[$field] : null;
 
-        if($rule == 'required' && empty($value))
-        {
+        if ($rule == 'required' && empty($value)) {
             $this->errors[$field][] = 'This field is required';
         }
 
@@ -33,14 +32,14 @@ class Validator
         }
 
         if (strpos($rule, 'min:') === 0) {
-            $length = (int) str_replace('min:', '', $rule);
+            $length = (int)str_replace('min:', '', $rule);
             if (strlen($value) < $length) {
                 $this->errors[$field][] = "Minimum length is $length";
             }
         }
 
         if (strpos($rule, 'max:') === 0) {
-            $length = (int) str_replace('max:', '', $rule);
+            $length = (int)str_replace('max:', '', $rule);
             if (strlen($value) > $length) {
                 $this->errors[$field][] = "Maximum length is $length";
             }
@@ -56,12 +55,10 @@ class Validator
                 $this->errors[$field][] = 'The field must match ' . $otherField;
             }
         }
-        
     }
 
-    public function getErrors()
+    public function getErrors(): array
     {
         return $this->errors;
     }
-
 }

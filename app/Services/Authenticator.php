@@ -31,27 +31,27 @@ class Authenticator
         return true;
     }
 
+    // По ідеї регістрація не задача Authenticator сервісу. По ідеї це повинен бути RegistrationService, або щось в такому дусі
     public function register($data)
     {
+        // Краще завести окремий сервіс для хешування, щось в дусі HasherService який буде займатись чисто задачами хешування
         $data['password'] = password_hash($data['password'], PASSWORD_BCRYPT);
         $userId = $this->userModel->create($data);
         $this->session->set('user_id', $userId);
         return $userId;
     }
 
-    public function check()
+    public function check() // specify return type
     {
 
         $login = $this->cookie->get('login');
         $key = $this->cookie->get('key');
 
-        if($this->session->has('user_id'))
-        {
+        if ($this->session->has('user_id')) {
             return true;
         }
 
-        if(empty($login || $key))
-        {
+        if (empty($login) || empty($key)) {
             return false;
         }
 
@@ -75,7 +75,8 @@ class Authenticator
     public function login($login, $password)
     {
         $user = $this->userModel->getUserByLogin($login);
-        
+
+        // верифікацію пароля також можна винести в сервіс, типу CredentialsVerificationService
         if($user && password_verify($password, $user['password']))
         {
             $this->session->set('user_id', $user['id_user']);
@@ -87,6 +88,7 @@ class Authenticator
 
     public function remember($login)
     {
+        // І знову ж таки, це також можна винести в якийсь SecurityService, який буде займатись секретами, ключами і т.д.
         $key = $this->generateSalt();
 
         $this->userModel->setCookie($key, $login);
@@ -96,8 +98,7 @@ class Authenticator
 
     public function user()
     {
-        $user = $this->userModel->getById($this->id());
-        return $user;
+        return $this->userModel->getById($this->id());
     }
 
     public function id()

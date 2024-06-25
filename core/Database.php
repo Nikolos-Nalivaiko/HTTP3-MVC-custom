@@ -5,6 +5,7 @@ namespace Core;
 use PDO;
 use PDOException;
 
+// Цей клас займається занадто великою кількістю задач. Менеджмент підключення, query builder. Треба розносити на окремі класи
 class Database
 {
     private static $instance = null;
@@ -20,9 +21,11 @@ class Database
     private function __construct()
     {
         try {
+            // Створення конекшену в базу варто винести в окремий метод, типу connect. Тому що тобі не завжди потрібно підключення,
+            // а в поточному випадку ти з кожним реквестом підключаєшся в базу що не зовсім добре для бази в плані навантаження
             $this->db = new PDO(
                 'mysql:host=localhost;dbname=http3;charset=utf8',
-                'root',
+                'root', // Ну ти креди то винеси в config файл, щоб потім їх можна було додати через ENV змінні. НЕ СЕКЬЮРНО, АЛО
                 '',
                 [
                     PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
@@ -34,6 +37,7 @@ class Database
         }
     }
 
+    // О, пахне сінглтоном.
     public static function getInstance()
     {
         if(self::$instance === null)

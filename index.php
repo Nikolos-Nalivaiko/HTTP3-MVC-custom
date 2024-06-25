@@ -1,5 +1,7 @@
 <?php
 
+// В цілому виглядає нормально. Але по ідеї цей файл повинен в тебе бути в папці public, щоб з інтернету не могли постучатись в корінні файли (там де в тебе зазвичай і лежать env файли)
+
 require_once __DIR__ . '/vendor/autoload.php';
 
 use Core\Kernel;
@@ -11,7 +13,7 @@ $router = new Router;
 $request = new Request;
 $response = new Response;
 
-// Імпортуйте маршрути
+// Імпортуйте маршрути // Пахне ChatGPT :)
 require_once __DIR__ . '/routes/web.php';
 
 $kernel = new Kernel($router, $request, $response);

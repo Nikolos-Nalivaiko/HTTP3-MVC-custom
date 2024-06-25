@@ -1,88 +1,79 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 class User extends Model
 {
-    public function getAllUsers()
+    public function getAllUsers(): array
     {
-        $query = $this->db->table('users')
-        ->select()
-        ->get();
-
-        return $query;
+        return $this->db->table('users')
+            ->select()
+            ->get();
     }
 
-    public function getUserByLogin($login)
+    public function getUserByLogin($login): ?array
     {
-        $query = $this->db
-        ->table('users')
-        ->select(['id_user','password', 'login'])
-        ->where('login', '=', $login)
-        ->first();
-
-        return $query;
+        return $this->db
+            ->table('users')
+            ->select(['id_user', 'password', 'login'])
+            ->where('login', '=', $login)
+            ->first();
     }
 
-    public function getByCookie($cookie, $login)
+    public function getByCookie($cookie, $login): ?array
     {
-        $query = $this->db
-        ->table('users')
-        ->select()
-        ->where('login', '=', $login)
-        ->where('cookie', '=', $cookie)
-        ->first();
-
-        return $query;
+        return $this->db
+            ->table('users')
+            ->select()
+            ->where('login', '=', $login)
+            ->where('cookie', '=', $cookie)
+            ->first();
     }
 
-    public function create($data)
+    public function create($data): int
     {
-        $query = $this->db
-        ->table('users')
-        ->insert([
-            'password' => $data['password'],
-            'login' => $data['login'],
-            'user_name' => $data['user_name'],
-            'middle_name' => $data['middle_name'],
-            'last_name' => $data['last_name'],
-            'type' => 'user',
-            'region' => $data['region'],
-            'city' => $data['city'],
-            'phone' => $data['phone'],
-            'email' => $data['email'],
-            'creation_data' => '22.03.22',
-            'image' => 'default.jpg',
-            'premium_status' => 'standart'
-        ]);
-
-        return $query;
+        return $this->db
+            ->table('users')
+            ->insert([
+                'password'       => $data['password'],
+                'login'          => $data['login'],
+                'user_name'      => $data['user_name'],
+                'middle_name'    => $data['middle_name'],
+                'last_name'      => $data['last_name'],
+                'type'           => 'user',
+                'region'         => $data['region'],
+                'city'           => $data['city'],
+                'phone'          => $data['phone'],
+                'email'          => $data['email'],
+                'creation_data'  => '22.03.22',
+                'image'          => 'default.jpg',
+                'premium_status' => 'standart',
+            ]);
     }
 
-    public function addImage($userId, $imageName)
+    public function addImage($userId, $imageName): void
     {
-        $query = $this->db->table('users')
-        ->where('id_user','=', $userId)
-        ->update(['image' => $imageName]);
-        return $query;
+        $this->db->table('users')
+            ->where('id_user', '=', $userId)
+            ->update(['image' => $imageName]);
     }
 
-    public function getById($id)
+    public function getById($id): ?array
     {
-        $query = $this->db
-        ->table('users')
-        ->select()
-        ->where('id_user','=', $id)
-        ->first();
-
-        return $query;
+        return $this->db
+            ->table('users')
+            ->select()
+            ->where('id_user', '=', $id)
+            ->first();
     }
 
-    public function setCookie($key, $login)
+    public function setCookie(string $key, string $login): void
     {
         $this->db
-        ->table('users')
-        ->where('login', '=', $login)
-        ->update(['cookie' => $key]);
+            ->table('users')
+            ->where('login', '=', $login)
+            ->update(['cookie' => $key]);
     }
 }
