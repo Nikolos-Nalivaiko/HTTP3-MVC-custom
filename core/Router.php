@@ -28,7 +28,7 @@ class Router
         ];
     }
 
-    public function direct(Request $request, Response $response): Response
+    public function direct(Request $request, Response $response)
     {
         $uri = $this->parseUri($request->getUri());
         $method = $request->getMethod();

@@ -26,7 +26,7 @@ class User extends Model
         return $query;
     }
 
-    public function getByCookie(string $cookie, string $login) :array
+    public function getByCookie(string $cookie, string $login) :?array
     {
         $query = $this->queryBuilder
         ->table('users')
