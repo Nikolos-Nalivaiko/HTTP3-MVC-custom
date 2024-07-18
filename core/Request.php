@@ -1,14 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Core;
 
 class Request
 {
-    protected $queryParams;
-    protected $bodyParams;
-    protected $fileParams;
-    protected $method;
-    protected $uri;
+    protected array $queryParams;
+    protected array $bodyParams;
+    protected array $fileParams;
+    protected string $method;
+    protected string $uri;
 
     public function __construct()
     {
@@ -17,50 +19,49 @@ class Request
         $this->queryParams = $_GET;
         $this->fileParams = $this->normalizeFiles($_FILES);
 
-        if($this->isJson())
-        {
+        if ($this->isJson()) {
             $this->bodyParams = json_decode(file_get_contents('php://input'), true) ?? [];
         } else {
             $this->bodyParams = $_POST;
         }
     }
 
-    public function getUri()
+    public function getUri(): string
     {
         return $this->uri;
     }
 
-    public function getMethod()
+    public function getMethod(): string
     {
         return $this->method;
     }
-    
-    public function set($key, $value)
+
+    public function set(string $key, mixed $value): void
     {
         $this->bodyParams[$key] = $value;
     }
 
-    public function getQueryParam($key, $default = null)
+    public function getQueryParam(string $key, mixed $default = null): mixed
     {
         return $this->queryParams[$key] ?? $default;
     }
 
-    public function getBodyParam($key, $default = null)
+    public function getBodyParam(string $key, mixed $default = null): mixed
     {
         return $this->bodyParams[$key] ?? $default;
     }
 
-    public function all()
+    public function all(): array
     {
         return array_merge($this->queryParams, $this->bodyParams, $this->fileParams);
     }
 
-    public function hasFile($key)
+    public function hasFile(string $key): bool
     {
         return isset($this->fileParams[$key]) && !empty($this->fileParams[$key]);
     }
 
-    public function files($key = null)
+    public function files(?string $key = null): mixed
     {
         if ($key === null) {
             return $this->fileParams;
@@ -69,12 +70,12 @@ class Request
         return $this->fileParams[$key] ?? null;
     }
 
-    protected function isJson()
+    protected function isJson(): bool
     {
         return isset($_SERVER['CONTENT_TYPE']) && strpos($_SERVER['CONTENT_TYPE'], 'application/json') !== false;
     }
 
-    private function normalizeFiles(array $files)
+    private function normalizeFiles(array $files): array
     {
         $result = [];
         foreach ($files as $key => $file) {

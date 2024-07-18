@@ -1,21 +1,23 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 class User extends Model
 {
-    public function getAllUsers()
+    public function getAllUsers() :array
     {
-        $query = $this->db->table('users')
+        $query = $this->queryBuilder->table('users')
         ->select()
         ->get();
 
         return $query;
     }
 
-    public function getUserByLogin($login)
+    public function getUserByLogin(string $login) :array
     {
-        $query = $this->db
+        $query = $this->queryBuilder
         ->table('users')
         ->select(['id_user','password', 'login'])
         ->where('login', '=', $login)
@@ -24,9 +26,9 @@ class User extends Model
         return $query;
     }
 
-    public function getByCookie($cookie, $login)
+    public function getByCookie(string $cookie, string $login) :array
     {
-        $query = $this->db
+        $query = $this->queryBuilder
         ->table('users')
         ->select()
         ->where('login', '=', $login)
@@ -36,17 +38,17 @@ class User extends Model
         return $query;
     }
 
-    public function create($data)
+    public function create(array $data) :int
     {
-        $query = $this->db
+        $query = $this->queryBuilder
         ->table('users')
         ->insert([
             'password' => $data['password'],
             'login' => $data['login'],
-            'user_name' => $data['user_name'],
-            'middle_name' => $data['middle_name'],
-            'last_name' => $data['last_name'],
-            'type' => 'user',
+            'user_name' => $data['username'],
+            'middle_name' => $data['middlename'],
+            'last_name' => $data['lastname'],
+            'type' => $data['type'],
             'region' => $data['region'],
             'city' => $data['city'],
             'phone' => $data['phone'],
@@ -59,17 +61,16 @@ class User extends Model
         return $query;
     }
 
-    public function addImage($userId, $imageName)
+    public function addImage(int $userId, string $imageName) :void 
     {
-        $query = $this->db->table('users')
+        $this->queryBuilder->table('users')
         ->where('id_user','=', $userId)
         ->update(['image' => $imageName]);
-        return $query;
     }
 
-    public function getById($id)
+    public function getById(int $id) :array
     {
-        $query = $this->db
+        $query = $this->queryBuilder
         ->table('users')
         ->select()
         ->where('id_user','=', $id)
@@ -78,9 +79,9 @@ class User extends Model
         return $query;
     }
 
-    public function setCookie($key, $login)
+    public function setCookie(string $key, string $login) :void
     {
-        $this->db
+        $this->queryBuilder
         ->table('users')
         ->where('login', '=', $login)
         ->update(['cookie' => $key]);

@@ -1,44 +1,46 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Core;
 
 class Response
 {
-    protected $headers = [];
-    protected $statusCode = 200;
-    protected $body;
+    protected array $headers = [];
+    protected int $statusCode = 200;
+    protected string $body = '';
 
-    public function setHeader($name, $value)
+    public function setHeader(string $name, string $value): void
     {
         $this->headers[$name] = $value;
     }
 
-    public function getHeaders()
+    public function getHeaders(): array
     {
         return $this->headers;
     }
 
-    public function setStatusCode($code)
+    public function setStatusCode(int $code): void
     {
         $this->statusCode = $code;
     }
 
-    public function getStatusCode()
+    public function getStatusCode(): int
     {
         return $this->statusCode;
     }
 
-    public function setContent($content)
+    public function setContent(string $content): void
     {
         $this->body = $content;
     }
 
-    public function getContent()
+    public function getContent(): string
     {
         return $this->body;
     }
 
-    public function setJsonContent($data)
+    public function setJsonContent(array $data): void
     {
         $this->setHeader('Content-Type', 'application/json');
         $this->setContent(json_encode($data));
