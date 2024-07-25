@@ -1,15 +1,16 @@
 <?php
 
-use App\Middlewares\AuthMiddleware;
-use App\Middlewares\GuestMiddleware;
+use core\Route;
 
-$router->get('', 'HomeController@index');
+Route::get('', 'HomeController@index');
 
-$router->get('sign-up/select', 'AccountController@select', [GuestMiddleware::class]);
-$router->get('sign-up/user', 'AccountController@signUpUser', [GuestMiddleware::class]);
-$router->post('sign-up/user', 'AccountController@signUpUser');
+Route::get('sign-in', 'AccountController@signInShow');
+Route::post('sign-in', 'AccountController@signIn');
 
-$router->get('cargo/create', 'CargoController@create', [AuthMiddleware::class]);
+Route::get('sign-up/select', 'AccountController@select');
 
-$router->get('sign-in', 'AccountController@signIn', [GuestMiddleware::class]);
-$router->post('sign-in', 'AccountController@signIn');
+Route::get('sign-up/user', 'AccountController@showSignUpUser');
+Route::post('sign-up/user', 'AccountController@showSignUpUser');
+
+Route::post('create/user', 'AccountController@registerUser');
+Route::post('uploadImage/user', 'AccountController@uploadImageUser');

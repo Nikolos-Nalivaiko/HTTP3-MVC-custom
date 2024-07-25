@@ -1,42 +1,49 @@
 <main class="main">
-    <section class="sign-in main__section-page __left-container">
-        <div class="sign-in__wrapper">
+    <section class="sign-in section__new-page no-containerRight">
+        <div class="sign-in__inner">
             <h2>Ласкаво просимо</h2>
-            <p class="main__subheadline">Ласкаво просимо в наш віртуальний світ, де
-                можливості не мають меж, а
-                співпраця – легка та захоплива</p>
+            <p class="section__new-page-description">Ласкаво просимо в наш віртуальний світ, де можливості не мають меж,
+                а співпраця – легка та захоплива</p>
 
-            <form action="" name="signIn" onsubmit="event.preventDefault()" method="post" class="sign-in__form"
-                enctype="multipart/form-data">
+            <form action="/sign-in" method="post" class="sign-in__form" id="signIn">
 
-                <div class="input__wrapper input__wrapper-sign-in">
-                    <p class="input__icon __icon-pass"></p>
-                    <p class="input__icon-visible __icon-visible_pass"></p>
-                    <div class="input__content">
-                        <label for="pass" class="input__label">Введіть ваш пароль</label>
-                        <input type="password" name="password" id="password" class="input input__sign-in input--password">
+                <div class="input">
+                    <div class="input__wrapper">
+                        <p class="input__icon __icon-password"></p>
+                        <div class="input__inner">
+                            <label for="password" class="input__label">Введіть ваш пароль</label>
+                            <input type="password" name="password" id="password"
+                                class="input__input input__input--password">
+                            <p class="input__icon--password __icon-eye"></p>
+                        </div>
                     </div>
+                    <span class="error-message"></span>
                 </div>
 
-                <div class="input__wrapper">
-                    <p class="input__icon __icon-login"></p>
-                    <div class="input__content">
-                        <label for="login" class="input__label">Введіть ваш логін</label>
-                        <input type="text" id="login" name="login" class="input input__sign-in">
+                <div class="input">
+                    <div class="input__wrapper">
+                        <p class="input__icon __icon-login"></p>
+                        <div class="input__inner">
+                            <label for="login" class="input__label">Введіть ваш логін</label>
+                            <input type="text" name="login" id="login" class="input__input">
+                        </div>
                     </div>
+                    <span class="error-message"></span>
                 </div>
 
-                <div class="input__checkbox-wrapper input__checkbox-wrapper--sign-in">
-                    <input type="checkbox" name="checkbox" id="checkbox" class="input__checkbox">
-                    <label for="checkbox" class="input__checkbox-label">Запам’ятати мене</label>
-                </div>
+                <label class="custom-checkbox">
+                    <input name="checkbox" type="checkbox">
+                    <span class="custom-checkbox__box"></span>
+                    Запам’ятати мене
+                </label>
 
-                <button type="submit" id="btn-form" class="input__btn">Увійти</button>
-                <a href="/account/recovery/select" class="input__btn input__btn-recover">Відновити дані</a>
+                <button type="submit" class="sign-in__form-btn">Увійти</button>
 
-                <p class="input__descrition-sign-in">Не маєте акаунту ?<a href="/sign-up/select"> Створіть його</a></p>
+                <a href="" class="sign-in__restore-btn">Відновити дані</a>
 
+                <p class="sign-in__goToSignUp">Не маєте акаунту ? <a href="sign-up/select">Створіть його</a></p>
             </form>
+
         </div>
         <div class="sign-in__image"></div>
     </section>

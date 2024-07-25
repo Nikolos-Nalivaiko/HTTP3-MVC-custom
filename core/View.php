@@ -1,24 +1,66 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Core;
 
 class View 
 {
-    public static function render($view, $data = [])
+    protected static array $config;
+    protected static string $layout = 'main';
+    protected string $view;
+    protected array $data;
+
+    public function __construct(string $view, array $data)
     {
+        $this->view = $view;
+        $this->data = $data;
+    }
+
+    public static function init(array $config): void
+    {
+        self::$config = $config;
+    }
+
+    public static function render(string $view, array $data = []): void
+    {
+        $viewsPath = self::$config['views_path'];
+
         extract($data);
 
         ob_start();
-        require __DIR__ . '/../app/Views/' . $view . '.php';
+        require $viewsPath . '/' . $view . '.php';
         $content = ob_get_clean();
-
-        require __DIR__ . '/../app/Views/layouts/main.php';
+        
+        $layoutPath = self::$config['layouts_path'] . '/' . self::$layout . '.php';
+        require $layoutPath;
     }
 
-    public static function errorCode($code) {
-        http_response_code($code);
+    public static function setLayout(string $layout): void
+    {
+        self::$layout = $layout;
+    }
 
-        require 'app/Views/errors/'.$code.'.php';
-        exit;
+    public static function errorCode(int $code): void
+    {
+        http_response_code($code);
+        $errorPath = self::$config['errors_path'];
+        require $errorPath . '/' . $code . '.php';
+        exit();
+    }
+
+    public static function view(string $view, array $data = []): self
+    {
+        return new self($view, $data);
+    }
+
+    public function getView(): string
+    {
+        return $this->view;
+    }
+
+    public function getData(): array
+    {
+        return $this->data;
     }
 }

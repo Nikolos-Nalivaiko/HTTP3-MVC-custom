@@ -1,151 +1,211 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controllers;
 
 use Core\View;
 use Core\Request;
 use Core\Response;
-use App\Models\User;
-use App\Models\Geo;
 use App\Services\Validator;
 use App\Services\Authenticator;
+use App\Services\RegistrationService;
+use App\Services\CredentialsVerificationService;
+use App\Services\GeoService;
+use App\Services\ImagesService;
 use App\Services\Session;
+use App\Services\Cookie;
 
 class AccountController
 {
-    protected $userModel;
-    protected $geoModel;
-    protected $validator;
-    protected $auth;
-    protected $session;
 
-    public function __construct(User $user, Geo $geo, Validator $validator, Authenticator $authenticator, Session $session)
-    {
-        $this->userModel = $user;
-        $this->geoModel = $geo;
-        $this->validator = $validator;
-        $this->auth = $authenticator;
-        $this->session = $session;
+    public function __construct(
+        private GeoService $geo,
+        private Validator $validator,
+        private Authenticator $auth,
+        private RegistrationService $register,
+        private CredentialsVerificationService $verify,
+        private ImagesService $image,
+        private Session $session,
+        private Cookie $cookie
+    ){
     }
 
-    public function select(Request $request)
+    public function select(Request $request) :View
     {
-        View::render('account/select', [
-            'title' => 'HTTP - Profile select',
-            'user' => $request->getBodyParam('user')
-        ]);
+
+        if(!$this->session->has('user_id')) {
+            return View::view('account/select', [
+                'title' => 'HTTP - Profile select',
+                'user' => $request->getBodyParam('user') 
+            ]);
+        } else {
+            return View::errorCode(404);
+        }
     }
 
-    public function signUpUser(Request $request, Response $response)
+    public function showSignUpUser(Request $request, Response $response) :Response|View
     {
 
-        // $this->session->destroy();
-        $userId = null;
+        if(!$this->session->has('user_id')) {
 
-        $rules = [
-            'password' => ['required', 'min:2', 'max:30', 'no_special_chars'],
-            'confirm' => ['required', 'min:2', 'max:30', 'no_special_chars', 'same:password'],
-            'login' => ['required', 'min:2', 'max:30', 'no_special_chars'],
-            'user_name' => ['required', 'min:2', 'max:30', 'no_special_chars'],
-            'middle_name' => ['required', 'min:2', 'max:30', 'no_special_chars'],
-            'last_name' => ['required', 'min:2', 'max:30', 'no_special_chars'],
-            'email' => ['email'],
-        ];
+            if($request->getBodyParam('region')) {
+                return  $response->setJsonContent($this->geo->getCities($request->getBodyParam('region')))
+                        ->setStatusCode(200);
+            }
+    
+            return View::view('account/signUpUser', [
+                'title' => 'HTTP - Sign-Up User',
+                'regions' => $this->geo->getRegions(),
+                'user' => $request->getBodyParam('user') 
+            ]);
 
-        if($request->getBodyParam('password'))
+        } else {
+            return View::errorCode(404);
+        }
+
+    }
+
+    public function registerUser(Request $request, Response $response) 
+    {
+
+        if($request->getMethod() == 'POST')
         {
             $data = $request->all();
 
+            $rules = [
+            'password' => ['required', 'min:4', 'max:15', 'no_special_chars'],
+            'confirm' => ['required', 'min:2', 'max:30', 'no_special_chars', 'same:password'],
+            'login' => ['required', 'min:2', 'max:30', 'no_special_chars'],
+            'username' => ['required', 'min:2', 'max:30', 'no_special_chars'],
+            'middlename' => ['required', 'min:2', 'max:30', 'no_special_chars'],
+            'lastname' => ['required', 'min:2', 'max:30', 'no_special_chars'],
+            'email' => ['email'],
+            ];
+
             if(!$this->validator->validate($data, $rules))
-            {
-                return $response->setJsonContent($this->validator->getErrors()); 
+            { 
+                return $response->setJsonContent([
+                    'status' => false,
+                    'message' => $this->validator->getFirstError()
+                ]);
             }
 
-            if(!$this->auth->checkCredentials($data['password'], $data['login']))
+            if($this->verify->verifyPassword($data['password'], $data['login']))
             {
-                $response->setStatusCode(422);
-                return $response->setJsonContent('Sorry, bad credentials');
+                return $response->setJsonContent([
+                    'status' => false,
+                    'message' => 'Такий логін вже існує'
+                ]);
             }
 
-            $userId = $this->auth->register($data);
+            $data['type'] = 'user';
+
+            $userId = $this->register->register($data);
+
+            if($userId)
+            {
+                return $response->setJsonContent([
+                    'status' => true,
+                    'userId' => $userId,
+                    'message' => 'Профіль успішно створено'
+                ]);
+            } else
+            {
+                return $response->setJsonContent([
+                    'status' => false,
+                    'message' => 'Не вдалося зареєструвати користувача'
+                ]);   
+            }
+        } else
+        {
+            return $response->setJsonContent([
+                'status' => false,
+                'message' => 'Запит не було відправлено'
+            ]); 
+        }
+
+    }
+
+    public function uploadImageUser(Request $request, Response $response) :Response
+    {
+        if($request->getMethod() == 'POST') {
+            $userId = (int) $request->getBodyParam('userId');
 
             if (!$userId) {
-                $response->setStatusCode(500);
-                return $response->setJsonContent('Failed to create user');
+                return $response->setJsonContent([
+                    'status' => false,
+                    'message' => 'Немає ID користувача' 
+                ]);
             }
 
-            return $response->setJsonContent(['userId' => $userId]);
-        }
-
-        if($request->hasFile('images') && $request->getBodyParam('userId'))
-        {
-            $userId = $request->getBodyParam('userId');
-
-            if (!isset($userId)) {
-                $response->setStatusCode(400);
-                return $response->setJsonContent('User ID is not defined');
-            }
-
-            foreach($request->files('images') as $image)
-            {
-                $photoPath = 'public/usersImages/' . $image['name'];
-                if(move_uploaded_file($image['tmp_name'], $photoPath))
-                {
-                    $this->userModel->addImage($userId, $image['name']);
+            if($request->hasFile('images')) {
+                $uploadResult = $this->image->uploadUserImage($request->files('images'), $userId);
+                if($uploadResult) {
+                    return $response->setJsonContent([
+                        'status' => true,
+                        'message' => 'Фотографії успішно завантажено'
+                    ]);
                 } else {
-                    $response->setStatusCode(400);
-                    return $response->setJsonContent('Image not uploaded');
+                    return $response->setJsonContent([
+                        'status' => false,
+                        'message' => 'Не вдалося завантажити фотографії'
+                    ]);
                 }
             }
+        } else {
+            return $response->setJsonContent([
+                'status' => false,
+                'message' => 'Дані не відправлені'
+            ]);   
         }
+    }
 
-        if($request->getBodyParam('region'))
-        {
-            return $response->setJsonContent($this->geoModel->getCities($request->getBodyParam('region')));
-        }
-
-        View::render('account/signUpUser', [
-            'title' => 'HTTP - User sign-up',
-            'regions' => $this->geoModel->getRegions(),
+    public function signInShow(Request $request) :View
+    {
+        return View::view('account/signIn', [
+            'title' => 'HTTP - User sign-in',
             'user' => $request->getBodyParam('user') 
         ]);
     }
 
-    public function signIn(Request $request, Response $response)
+    public function signIn(Request $request, Response $response) :Response
     {
-        // $this->session->destroy();
-        $rules = [
-            'password' => ['required', 'min:2', 'max:30', 'no_special_chars'],
-            'login' => ['required', 'min:2', 'max:30', 'no_special_chars'],
 
-        ];
-
-        if($request->getBodyParam('password'))
-        {
-            $data = $request->all();
-
-            if(!$this->validator->validate($data, $rules))
-            {
-                return $response->setJsonContent($this->validator->getErrors());
+        if(!$this->session->has('user_id')) {
+            if($request->getMethod() == 'POST') {
+                $data = $request->all();
+    
+                $rules = [
+                    'password' => ['required', 'min:4', 'max:15', 'strongRegex'],
+                    'login' => ['required', 'min:4', 'max:15', 'lightRegex'],
+        
+                ];
+    
+                if(!$this->validator->validate($data, $rules)) {
+                    return $response->setJsonContent([
+                        'status' => false,
+                        'message' => $this->validator->getFirstError()
+                    ]);                
+                }
+    
+                if(!$this->auth->login($data['login'], $data['password'], $data['checkbox'])) {
+                    return $response->setJsonContent([
+                        'status' => false,
+                        'message' => 'Такого користувача не знайдено'
+                    ]);
+                }
+    
+                return $response->setJsonContent([
+                    'status' => true,
+                    'message' => 'Користувач успішно авторизований'
+                ]);
             }
-
-            if(!$this->auth->login($data['login'], $data['password']))
-            {
-                return $response->setJsonContent('Not auth');
-            }
-
-            if($request->getBodyParam('checkbox'))
-            {
-                $this->auth->remember($data['login']);
-            }
-
-            return $response->setJsonContent(true);
         }
 
-        View::render('account/signIn', [
-            'title' => 'HTTP - User sign-in',
-            'user' => $request->getBodyParam('user')
+        return $response->setJsonContent([
+            'status' => true,
+            'message' => 'Дані не були відправлені'
         ]);
     }
-
 }

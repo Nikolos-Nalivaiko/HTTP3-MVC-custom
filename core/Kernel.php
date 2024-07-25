@@ -1,22 +1,27 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Core;
 
 class Kernel
 {
-    protected $router;
-    protected $request;
-    protected $response;
-    protected $middlewares = [];
+    protected Router $router;
+    
+    protected Request $request;
+    
+    protected Response $response;
+    
+    protected array $middlewares = [];
 
-    public function __construct($router, $request, $response)
+    public function __construct(Router $router, Request $request, Response $response)
     {
         $this->router = $router;
         $this->request = $request;
         $this->response = $response;
     }
 
-    public function handle()
+    public function handle() :void
     {
         // Обробка middleware перед основною логікою
         $response = $this->handleMiddleware($this->middlewares, $this->request, $this->response, function($request, $response) {
@@ -24,7 +29,7 @@ class Kernel
             return $this->router->direct($request, $response);
         });
 
-        // Переконайтесь, що response не null
+        //response не null
         if (is_null($response)) {
             $response = $this->response;
         }
@@ -34,26 +39,34 @@ class Kernel
     }
 
     // Додавання middleware
-    public function addMiddleware($middleware)
+    public function addMiddleware($middleware) :void
     {
         $this->middlewares[] = $middleware;
     }
 
     // Відправка відповіді клієнту
-    protected function sendResponse($response)
+    protected function sendResponse($response) 
     {
-        http_response_code($response->getStatusCode());
 
-        foreach ($response->getHeaders() as $name => $value) {
-            header("{$name}: {$value}");
+        if($response instanceof View)
+        {
+            View::render($response->getView(), $response->getData());
+        } else
+        {
+            http_response_code($response->getStatusCode());
+
+            foreach ($response->getHeaders() as $name => $value) {
+                header("{$name}: {$value}");
+            }
+    
+            echo $response->getContent();
         }
 
-        echo $response->getContent();
         exit;
     }
 
     // Обробка middleware
-    protected function handleMiddleware($middlewares, $request, $response, $next)
+    protected function handleMiddleware(array $middlewares, Request $request, Response $response, $next) :?View
     {
         // Перебір middleware з кінця до початку, щоб забезпечити правильний порядок виконання
         foreach (array_reverse($middlewares) as $middleware) {

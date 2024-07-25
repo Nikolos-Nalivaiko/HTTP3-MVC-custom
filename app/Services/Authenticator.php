@@ -1,118 +1,88 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
-use App\Models\User;
+use Core\Models\User;
 use App\Services\Session;
 use App\Services\Cookie;
+use App\Services\SecurityService;
+use App\Services\CredentialsVerificationService;
+use App\Services\HasherService;
 
 class Authenticator
 {
-    protected $userModel;
-    protected $session;
-    protected $cookie;
+    protected User $userModel;
+    protected Session $session;
+    protected Cookie $cookie;
+    protected SecurityService $security;
+    protected HasherService $hash;
+    protected CredentialsVerificationService $credentials;
 
     public function __construct()
     {
         $this->userModel = new User();
         $this->session = new Session();
         $this->cookie = new Cookie();
+        $this->security = new SecurityService();
+        $this->credentials = new CredentialsVerificationService();
+        $this->hash = new HasherService();
     }
 
-    public function checkCredentials($password, $login)
+    public function check() :bool
     {
-        $user = $this->userModel->getUserByLogin($login);
-        
-        if($user && password_verify($password, $user['password']))
-        {
-            return false;
-        }
-
-        return true;
+        $token = $this->session->get('token') ?? $this->cookie->get('token') ?? null;
+        return $this->security->checkToken($token);
     }
 
-    public function register($data)
-    {
-        $data['password'] = password_hash($data['password'], PASSWORD_BCRYPT);
-        $userId = $this->userModel->create($data);
-        $this->session->set('user_id', $userId);
-        return $userId;
-    }
-
-    public function check()
-    {
-
-        $login = $this->cookie->get('login');
-        $key = $this->cookie->get('key');
-
-        if($this->session->has('user_id'))
-        {
-            return true;
-        }
-
-        if(empty($login || $key))
-        {
-            return false;
-        }
-
-        $user = $this->userModel->getByCookie($key, $login);
-
-        if(!empty($user))
-        {
-            $this->session->set('user_id', $user['id_user']);
-            return true;
-        }
-
-        return false;
-
-    }
-
-    public function logout()
+    public function logout() :void
     {
         $this->session->destroy();
     }
 
-    public function login($login, $password)
+    public function login(string $login, string $password, string $remember) :bool
     {
-        $user = $this->userModel->getUserByLogin($login);
+        $user = $this->credentials->verifyLogin($login);
         
-        if($user && password_verify($password, $user['password']))
-        {
-            $this->session->set('user_id', $user['id_user']);
-            return true;
+        if($user['status'] == true) {
+            $user = $user['user'];
+        } else {
+            $user = null;
         }
+    
+        if(!empty($user)) {
+            $decryptedPassword = $this->hash->decrypt($user['password']);
+            if($password === $decryptedPassword) {
+                $token = $this->security->generateToken($user['id_user'], $remember);
 
+                if($remember) {
+                    $this->cookie->set('token', $token, time() + (60 * 60 * 24 * 7));
+                } else {
+                    $this->session->set('token', $token);
+                }
+
+                $this->session->set('user_id', $user['id_user']);
+                return true;
+            }
+        }
+    
         return false;
     }
 
-    public function remember($login)
+    public function user() :array
     {
-        $key = $this->generateSalt();
+        if($this->id()) {
+            $user = $this->userModel->getById($this->id());
+        } else {
+            $user = [];
+        }
 
-        $this->userModel->setCookie($key, $login);
-        $this->cookie->set('login', $login);
-        $this->cookie->set('key', $key);
-    }
-
-    public function user()
-    {
-        $user = $this->userModel->getById($this->id());
         return $user;
     }
 
-    public function id()
+    public function id() :int
     {
         return $this->session->get('user_id');
-    }
-
-    private function generateSalt() {
-        $salt = '';
-        $saltLenght = 10;
-
-        for($i = 0; $i < $saltLenght; $i++) {
-            $salt .= chr(mt_rand(33,126));
-        }
-
-        return $salt;
     }
 }
