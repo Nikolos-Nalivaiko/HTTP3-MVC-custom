@@ -1,22 +1,15 @@
 <?php
 
-use core\Route;
 use App\Middlewares\AuthMiddleware;
 use App\Middlewares\GuestMiddleware;
 
-Route::get('', 'HomeController@index');
+$router->get('', 'HomeController@index');
 
-Route::get('sign-in', 'AccountController@signIn', [GuestMiddleware::class]);
-Route::post('sign-in', 'AccountController@signIn');
+$router->get('sign-up/select', 'AccountController@select', [GuestMiddleware::class]);
+$router->get('sign-up/user', 'AccountController@signUpUser', [GuestMiddleware::class]);
+$router->post('sign-up/user', 'AccountController@signUpUser');
 
-Route::get('sign-up/select', 'AccountController@select', [GuestMiddleware::class]);
+$router->get('cargo/create', 'CargoController@create', [AuthMiddleware::class]);
 
-Route::get('sign-up/user', 'AccountController@showSignUpUser', [GuestMiddleware::class]);
-Route::post('sign-up/user', 'AccountController@showSignUpUser');
-
-Route::post('create/user', 'AccountController@registerUser');
-Route::post('uploadImage/user', 'AccountController@uploadImageUser');
-
-Route::post('geo', 'GeoController@geography');
-
-Route::get('cargo/create', 'CargoController@create', [AuthMiddleware::class]);
+$router->get('sign-in', 'AccountController@signIn', [GuestMiddleware::class]);
+$router->post('sign-in', 'AccountController@signIn');

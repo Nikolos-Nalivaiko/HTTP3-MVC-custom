@@ -1,25 +1,24 @@
 <?php
 
-declare(strict_types=1);
-
 namespace App\Services;
 
 class Cookie
 {
-    public function set(string $name, string $value, int $expiry = 2592000, string $path = '/'): void
+    public function set($name, $value, $expiry = 30 * 24 * 60 * 60, $path = '/')
     {
         setcookie($name, $value, time() + $expiry, $path);
     }
 
-    public function get(string $name): ?string
+    public function get($name)
     {
         return isset($_COOKIE[$name]) ? $_COOKIE[$name] : null;
     }
 
-    public function delete(string $name, string $path = '/'): void
+    public function delete($name, $path = '/')
     {
-        if (isset($_COOKIE[$name])) {
-            setcookie($name, '', time() - 2592000, $path);
+        if(isset($_COOKIE[$name]))
+        {
+            setcookie($name, '', time() - 30 * 24 * 60 * 60, $path);
             unset($_COOKIE[$name]);
         }
     }

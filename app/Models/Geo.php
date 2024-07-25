@@ -1,35 +1,35 @@
 <?php
 
-declare(strict_types=1);
-
 namespace App\Models;
 
 class Geo extends Model
 {
-    public function getRegions() :array
+    public function getRegions()
     {
-        return array_column(
-            $this->queryBuilder
-            ->table('regions')
-            ->select(['region_name'])
-            ->get(), 'region_name'
-        );
+        $query = $this->db
+        ->table('regions')
+        ->select(['region_name'])
+        ->get();
+
+        $regions = array_column($query, 'region_name');
+        return $regions;
     }
 
-    public function getCities(string $nameRegion) :array
+    public function getCities($nameRegion)
     {
-        $idRegion = $this->queryBuilder
+        $idRegion = $this->db
         ->table('regions')
         ->select(['region_id'])
         ->where('region_name', '=', $nameRegion)
         ->pluck('region_id');
 
-        return array_column(
-            $this->queryBuilder
-            ->table('cities')
-            ->select(['city_name'])
-            ->where('region_id', '=' , $idRegion)
-            ->get(), 'city_name'
-        );
+        $cities = $this->db
+        ->table('cities')
+        ->select(['city_name'])
+        ->where('region_id', '=' , $idRegion)
+        ->get();
+
+        $cities = array_column($cities, 'city_name');
+        return $cities;
     }
 }

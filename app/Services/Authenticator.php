@@ -1,30 +1,45 @@
 <?php
 
-declare(strict_types=1);
-
 namespace App\Services;
 
 use App\Models\User;
 use App\Services\Session;
 use App\Services\Cookie;
-use App\Services\SecurityService;
 
 class Authenticator
 {
-    protected User $userModel;
-    protected Session $session;
-    protected Cookie $cookie;
-    protected SecurityService $security;
+    protected $userModel;
+    protected $session;
+    protected $cookie;
 
     public function __construct()
     {
         $this->userModel = new User();
         $this->session = new Session();
         $this->cookie = new Cookie();
-        $this->security = new SecurityService();
     }
 
-    public function check() :bool
+    public function checkCredentials($password, $login)
+    {
+        $user = $this->userModel->getUserByLogin($login);
+        
+        if($user && password_verify($password, $user['password']))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function register($data)
+    {
+        $data['password'] = password_hash($data['password'], PASSWORD_BCRYPT);
+        $userId = $this->userModel->create($data);
+        $this->session->set('user_id', $userId);
+        return $userId;
+    }
+
+    public function check()
     {
 
         $login = $this->cookie->get('login');
@@ -52,12 +67,12 @@ class Authenticator
 
     }
 
-    public function logout() :void
+    public function logout()
     {
         $this->session->destroy();
     }
 
-    public function login($login, $password) :bool
+    public function login($login, $password)
     {
         $user = $this->userModel->getUserByLogin($login);
         
@@ -70,24 +85,34 @@ class Authenticator
         return false;
     }
 
-    public function remember($login) :void
+    public function remember($login)
     {
-        
-        $key = $this->security->generateSalt();
+        $key = $this->generateSalt();
 
         $this->userModel->setCookie($key, $login);
         $this->cookie->set('login', $login);
         $this->cookie->set('key', $key);
     }
 
-    public function user() :array
+    public function user()
     {
         $user = $this->userModel->getById($this->id());
         return $user;
     }
 
-    public function id() :int
+    public function id()
     {
         return $this->session->get('user_id');
+    }
+
+    private function generateSalt() {
+        $salt = '';
+        $saltLenght = 10;
+
+        for($i = 0; $i < $saltLenght; $i++) {
+            $salt .= chr(mt_rand(33,126));
+        }
+
+        return $salt;
     }
 }

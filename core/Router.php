@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Core;
 
 use ReflectionClass;
@@ -10,17 +8,17 @@ class Router
 {
     protected $routes = [];
 
-    public function get(string $uri, string|array $controller, array $middleware = []): void
+    public function get($uri, $controller, $middleware = [])
     {
         $this->addRoute('GET', $uri, $controller, $middleware);
     }
 
-    public function post(string $uri, string|array $controller, array $middleware = []): void
+    public function post($uri, $controller, $middleware = [])
     {
         $this->addRoute('POST', $uri, $controller, $middleware);
     }
 
-    protected function addRoute(string $method, string $uri, string|array $controller, array $middleware): void
+    protected function addRoute($method, $uri, $controller, $middleware)
     {
         $this->routes[$method][$uri] = [
             'controller' => $controller,
@@ -28,7 +26,7 @@ class Router
         ];
     }
 
-    public function direct(Request $request, Response $response)
+    public function direct($request, $response)
     {
         $uri = $this->parseUri($request->getUri());
         $method = $request->getMethod();
@@ -60,7 +58,7 @@ class Router
         return $response;
     }
 
-    protected function handleMiddleware(array $middleware, Request $request, Response $response): Response
+    protected function handleMiddleware($middleware, $request, $response)
     {
         // Почати з виклику першого middleware
         $next = function ($request, $response) {
@@ -81,7 +79,7 @@ class Router
         return $next($request, $response);
     }
 
-    protected function callAction(string $controller, string $action, Request $request, Response $response, array $parameters = []): mixed
+    protected function callAction($controller, $action, $request, $response, $parameters = [])
     {
         $controller = "App\\Controllers\\{$controller}";
         if (!class_exists($controller)) {
@@ -97,7 +95,7 @@ class Router
         return call_user_func_array([$controller, $action], array_merge([$request, $response], $parameters));
     }
 
-    protected function resolveClass(string $className, Request $request, Response $response): object
+    protected function resolveClass($className, $request, $response)
     {
         $reflector = new ReflectionClass($className);
         $constructor = $reflector->getConstructor();
@@ -119,7 +117,7 @@ class Router
         return $reflector->newInstanceArgs($dependencies);
     }
 
-    protected function resolveDependency(string $className, Request $request, Response $response): object
+    protected function resolveDependency($className, $request, $response)
     {
         if ($className === Request::class) {
             return $request;
@@ -132,7 +130,7 @@ class Router
         return new $className;
     }
 
-    protected function parseUri(string $uri): string
+    protected function parseUri($uri)
     {
         if ($position = strpos($uri, '?')) {
             return substr($uri, 0, $position);
@@ -141,7 +139,7 @@ class Router
         return trim($uri, '/');
     }
 
-    protected function convertToRegex(string $route): string
+    protected function convertToRegex($route)
     {
         return "/^" . str_replace('/', '\/', $route) . "$/";
     }

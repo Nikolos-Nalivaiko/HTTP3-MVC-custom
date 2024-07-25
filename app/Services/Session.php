@@ -1,39 +1,38 @@
 <?php
 
-declare(strict_types=1);
-
 namespace App\Services;
 
 class Session
 {
     public function __construct()
     {
-        if (session_status() == PHP_SESSION_NONE) {
+        if(session_status() == PHP_SESSION_NONE)
+        {
             session_start();
         }
     }
 
-    public function set(string $key, mixed $value): void
+    public function set($key, $value)
     {
         $_SESSION[$key] = $value;
     }
 
-    public function get(string $key): mixed
+    public function get($key)
     {
         return $_SESSION[$key] ?? null;
     }
 
-    public function has(string $key): bool
+    public function has($key)
     {
         return isset($_SESSION[$key]);
     }
 
-    public function remove(string $key): void
+    public function remove($key)
     {
         unset($_SESSION[$key]);
     }
 
-    public function destroy(): void
+    public function destroy()
     {
         session_destroy();
     }

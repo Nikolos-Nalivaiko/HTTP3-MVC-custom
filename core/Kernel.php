@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Core;
 
 class Kernel
@@ -26,7 +24,7 @@ class Kernel
             return $this->router->direct($request, $response);
         });
 
-        //response не null
+        // Переконайтесь, що response не null
         if (is_null($response)) {
             $response = $this->response;
         }
@@ -44,21 +42,13 @@ class Kernel
     // Відправка відповіді клієнту
     protected function sendResponse($response)
     {
+        http_response_code($response->getStatusCode());
 
-        if($response instanceof View)
-        {
-            View::render($response->getView(), $response->getData());
-        } else
-        {
-            http_response_code($response->getStatusCode());
-
-            foreach ($response->getHeaders() as $name => $value) {
-                header("{$name}: {$value}");
-            }
-    
-            echo $response->getContent();
+        foreach ($response->getHeaders() as $name => $value) {
+            header("{$name}: {$value}");
         }
 
+        echo $response->getContent();
         exit;
     }
 

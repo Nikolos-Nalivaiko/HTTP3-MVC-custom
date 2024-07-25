@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace App\Middlewares;
 
 use Core\Request;
@@ -18,7 +16,7 @@ class AuthMiddleware
         $this->auth = new Authenticator();        
     }
 
-    public function handle(Request $request, Response $response, $next) 
+    public function handle(Request $request, Response $response, $next)
     {
         if(!$this->auth->check())
         {

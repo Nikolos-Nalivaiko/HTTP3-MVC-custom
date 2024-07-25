@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Хост: 127.0.0.1
--- Час створення: Чрв 10 2024 р., 20:22
--- Версія сервера: 10.4.28-MariaDB
--- Версія PHP: 8.2.4
+-- Час створення: Лип 24 2024 р., 20:18
+-- Версія сервера: 10.4.32-MariaDB
+-- Версія PHP: 8.2.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -140,15 +140,6 @@ CREATE TABLE `cargos` (
   `user_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
---
--- Дамп даних таблиці `cargos`
---
-
-INSERT INTO `cargos` (`cargo_id`, `cargo_name`, `weight`, `load_region`, `load_city`, `unload_region`, `unload_city`, `load_date`, `unload_date`, `body`, `price`, `pay_method`, `distance`, `description`, `urgent`, `qr_cargo`, `user_id`) VALUES
-(10, 'Filter3', 15, 'Одеська область', 'Рені', 'Одеська область', 'Роздільна', '2024-02-27', '2024-02-29', 'Мультиліфт', 2, 'Готівка', 2, 'dd', 'No', 'qr_cargos-7-929098.png', 15),
-(11, 'Filter4', 50, 'Полтавська область', 'Полтава', 'Одеська область', 'Роздільна', '2024-02-27', '2024-02-29', 'Мультиліфт', 2, 'Готівка', 2, 'dd', 'No', 'qr_cargos-7-929098.png', 15),
-(16, 'Електроніка для дому', 5, 'Запорізька область', 'Дніпрорудне', 'Миколаївська область', 'Первомайськ', '2024-03-25', '2024-04-02', 'Фургон', 52000, 'Б/Р', 250, 'Завантажте вантаж із сучасними електронними пристроями для дому, включаючи побутову техніку, розумний будинок та різноманітні гаджети. Цей вантаж створений для тих, хто цінує комфорт та інновації в повсякденному житті', 'No', 'qr_cargos-16-286997.png', 17);
-
 -- --------------------------------------------------------
 
 --
@@ -176,15 +167,6 @@ CREATE TABLE `cars` (
   `user_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
---
--- Дамп даних таблиці `cars`
---
-
-INSERT INTO `cars` (`car_id`, `brand`, `model`, `engine_capacity`, `wheel_mode`, `power`, `gearbox`, `body`, `engine_type`, `load_capacity`, `price`, `region`, `city`, `year`, `mileage`, `description`, `qr_car`, `user_id`) VALUES
-(9, 'Volkswagen', 'Crafter', 2, 'Передній', 140, 'Механічна', 'Фургон', 'Дизель', 5, 500, 'Житомирська область', 'Новоград-Волинський', 2017, 215000, '', 'qr_car-9-751588.png', 14),
-(10, 'Opel', 'Combo', 1.5, 'Передній', 95, 'Механічна', 'Фургон', 'Дизель', 0.8, 800, 'Запорізька область', 'Запоріжжя', 2023, 2000, '', 'qr_car-10-872234.png', 14),
-(16, 'MAN', 'TGX', 10, 'Задній', 440, 'Автоматична', 'Тягач', 'Дизель', 15, 520, 'Волинська область', 'Ковель', 2024, 1000, '', 'qr_car-16-662795.png', 17);
-
 -- --------------------------------------------------------
 
 --
@@ -197,26 +179,6 @@ CREATE TABLE `car_images` (
   `preview` varchar(255) NOT NULL DEFAULT 'No',
   `car_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
-
---
--- Дамп даних таблиці `car_images`
---
-
-INSERT INTO `car_images` (`image_id`, `image_name`, `preview`, `car_id`) VALUES
-(12, 'volkswagen_crafter__501497327hd.webp', 'No', 9),
-(14, 'volkswagen_crafter__501497338hd.webp', 'Yes', 9),
-(15, 'volkswagen_crafter__501497344hd.webp', 'No', 9),
-(16, 'opel_combo-cargo__540861535hd.webp', 'No', 10),
-(17, 'opel_combo-cargo__540861563hd.webp', 'No', 10),
-(18, 'opel_combo-cargo__540861600hd.webp', 'Yes', 10),
-(19, 'opel_combo-cargo__540861624hd.webp', 'No', 10),
-(20, 'opel_combo-cargo__540861658hd.webp', 'No', 10),
-(28, 'man_tgx__542534054hd.webp', 'No', 16),
-(29, 'man_tgx__543387685hd.webp', 'Yes', 16),
-(30, 'man_tgx__543387716hd.webp', 'No', 16),
-(31, 'man_tgx__543387733hd.webp', 'No', 16),
-(32, 'man_tgx__543387759hd.webp', 'No', 16),
-(33, 'man_tgx__543387792hd.webp', 'No', 16);
 
 -- --------------------------------------------------------
 
@@ -709,14 +671,6 @@ CREATE TABLE `comment` (
   `user_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
---
--- Дамп даних таблиці `comment`
---
-
-INSERT INTO `comment` (`comment_id`, `description`, `rating`, `user_id`) VALUES
-(2, 'At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga.', 5, 15),
-(4, 'occasionally circumstances occur in which toil and pain can procure him some great pleasure. To take a trivial example, which of us ever undertakes laborious physical exercise, except to obtain some advantage', 5, 14);
-
 -- --------------------------------------------------------
 
 --
@@ -1096,17 +1050,6 @@ CREATE TABLE `reviews` (
   `rating` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
---
--- Дамп даних таблиці `reviews`
---
-
-INSERT INTO `reviews` (`review_id`, `recipient_id`, `sender_id`, `description`, `rating`) VALUES
-(2, 15, 14, 'But burt', 4),
-(3, 14, 15, 'Наша компанія з великим задоволенням використовує логічну платформу для організації перевезень. Цей інноваційний інструмент дозволяє нам ефективно керувати нашим транспортним парком та знаходити оптимальні маршрути для доставки вантажів. Легка навігація, надійність та зручність взаємодії з іншими учасниками ринку роблять цю платформу незамінною для наших потреб.', 3),
-(4, 15, 14, 'Наша компанія з великим задоволенням використовує логічну платформу для організації перевезень. Цей інноваційний інструмент дозволяє нам ефективно керувати нашим транспортним парком та знаходити оптимальні маршрути для доставки вантажів. Легка навігація, надійність та зручність взаємодії з іншими учасниками ринку роблять цю платформу незамінною для наших потреб.', 5),
-(5, 14, 15, 'Lorem....', 3),
-(8, 14, 14, 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum', 5);
-
 -- --------------------------------------------------------
 
 --
@@ -1126,7 +1069,6 @@ CREATE TABLE `users` (
   `phone` varchar(50) NOT NULL,
   `email` varchar(255) NOT NULL,
   `creation_data` date NOT NULL,
-  `cookie` varchar(255) DEFAULT NULL,
   `image` varchar(255) NOT NULL,
   `premium_status` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
@@ -1135,10 +1077,10 @@ CREATE TABLE `users` (
 -- Дамп даних таблиці `users`
 --
 
-INSERT INTO `users` (`id_user`, `password`, `login`, `user_name`, `middle_name`, `last_name`, `type`, `region`, `city`, `phone`, `email`, `creation_data`, `cookie`, `image`, `premium_status`) VALUES
-(14, '$2y$10$q7klG7QhDtkWLClzw14oJeGHdBw3gfQpVaTwabDMSSLF2AssC96Gy', 'login', 'Максим', 'Олегович', 'Литвиненко', 'Фізична особа', 'Житомирська область', 'Чуднів', '+38 (222) 222-22-33', 'olek@gmail.com', '2024-02-25', 'LqPC8^?WYb', 'skoda_octavia__550318989hd.webp', 'Standart'),
-(15, '$2y$10$gHGayveyfU2taIJJvvazy.k/fT6kDARfevaXlApGWJeb7SyIh6Jki', 'loginS', 'ТОВ \"ЕкоСпринт\"', NULL, NULL, 'Підприємство', 'Черкаська область', 'Тальне', '+38 (067) 954-21-55', 'eko@io.com', '2024-02-25', NULL, 'imf.fgf', 'Premium'),
-(17, '$2y$10$zf9HRoXpWb3uZ0oWUeqFv.n5VdA9702LxoI/jTpPj4phNqgC21rjS', 'companyLogin', 'ТОВ \"SUNRISE BEACH\"', NULL, NULL, 'Підприємство', 'Житомирська область', 'Коростень', '+38 (067) 852-36-45', 'rise@gmail.com', '2024-03-25', NULL, 'sunrise-beach-gradient-colorful-logo_343694-2439.jpg', '');
+INSERT INTO `users` (`id_user`, `password`, `login`, `user_name`, `middle_name`, `last_name`, `type`, `region`, `city`, `phone`, `email`, `creation_data`, `image`, `premium_status`) VALUES
+(81, 'ZC9wQ3BJT296Z09IMlRFVTZUMTZXZz09OjrL8RQ8Dave9EEtqFLx0Eea', 'rrrr', 'rrrr', 'rrrr', 'rrrr', 'user', 'Дніпропетровська область', 'Вільногірськ', '5345', 'dfg@fdg.gfd', '2022-03-22', 'default.jpg', 'standart'),
+(82, 'SUtxTlJHaWdTaXJTUUF3TXJrS01aQT09Ojob+EwrWvSN72O1ZowSSNpA', 'rrrr', 'rrrr', 'rrrr', 'rrrr', 'user', 'Харківська область', 'Богодухів', '4323', 'fd@gkh.lk', '2022-03-22', 'default.jpg', 'standart'),
+(84, 'ZVgrMElRQS9ST1Q2d3hTVzNBWTVuUT09Ojp+5/hMhTeXgCJQYfYlowoz', 'nkteam', 'nkteam', 'nkteam', 'nkteam', 'user', 'Чернігівська область', 'Городня', '0678522222', 'nkteam@team.com', '2022-03-22', 'card.jpg', 'standart');
 
 --
 -- Індекси збережених таблиць
@@ -1286,7 +1228,7 @@ ALTER TABLE `reviews`
 -- AUTO_INCREMENT для таблиці `users`
 --
 ALTER TABLE `users`
-  MODIFY `id_user` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=49;
+  MODIFY `id_user` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=85;
 
 --
 -- Обмеження зовнішнього ключа збережених таблиць
